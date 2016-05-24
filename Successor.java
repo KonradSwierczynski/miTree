@@ -1,4 +1,6 @@
 /**
  * Klasa stworzona tylko i wyłącznie w celu dziedziczenia
  */
-public class Successor{}
+import java.io.*;
+
+public class Successor implements Serializable{}
