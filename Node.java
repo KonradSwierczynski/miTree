@@ -54,4 +54,40 @@ public class Node <Key extends Comparable<? super Key>, Value> extends Successor
 		this.level = level;
 	}
 
+	/**
+	* Zwraca liczbę wartości, które mają należeć do lewego węzła po podziale
+	* @return liczba wartości, które mają należeć do lewego węzła po podziale
+	*/
+	public int getSplitPoint()
+	{
+		return (getSuccessors().size()+1)/2;
+	}
+
+	/**
+	* Dzieli węzeł
+	* @return lista zawierająca lewy i prawy węzeł powstały w wyniku podziału
+	*/
+	public ArrayList<Successor> split() {
+		int firstInRight = getSplitPoint();
+
+		Node newChild = new Node(minKeys + 1);
+		newChild.setLevel(getLevel());
+
+		newChild.setSuccessors( new ArrayList<Successor>(
+				getSuccessors().subList(firstInRight, getSuccessors().size())
+			));
+		newChild.setKeys( new ArrayList<Key>(
+				getKeys().subList(firstInRight, getKeys().size())
+			));
+
+		getSuccessors().subList(firstInRight, getSuccessors().size()).clear();
+		getKeys().subList(firstInRight - (isLeaf() ? 0 : 1), getSuccessors().size()).clear();
+
+		ArrayList result = new ArrayList<Successor>();
+
+		result.add(this);
+		result.add(newChild);
+
+		return result;
+	}
 }
