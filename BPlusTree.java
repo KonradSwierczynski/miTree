@@ -266,10 +266,11 @@ public class BPlusTree <Key extends Comparable<? super Key>, Value> {
 	* Rysowanie drzewa
 	*/
 	public void dump(){
-		dump(root, "");
+		dump(rootPage, height - 1, "");
 	}
-	private void dump(Node node, String indentation){
-		if(node.isLeaf() == false){
+	private void dump(Page page, int level, String indentation){
+		if(level > 1){
+			Node node = (Node)page.getNode(level, height);
 			System.out.print(indentation + "InnerNode [" + node.getKeys().size() + " , " + node.getSuccessors().size() + "]");
 			System.out.println();
 			System.out.print(indentation);
@@ -280,15 +281,15 @@ public class BPlusTree <Key extends Comparable<? super Key>, Value> {
 			System.out.println();
 			
 			for(int i = 0; i < node.getSuccessors().size(); i++){
-				dump((Node)node.getSuccessors().get(i), "   " + indentation);
+				dump((Page)node.getSuccessors().get(i), level - 1, "   " + indentation);
 			}
 		} else {
-			System.out.println(indentation + "Leaf [" + node.getKeys().size() + " , " + node.getSuccessors().size() + "]");
-			
-			System.out.print(indentation);
-			for(int i = 0; i < node.getKeys().size(); i++){
-				System.out.print(node.getKeys().get(i) + "(" + ((ValueNode)node.getSuccessors().get(i)).getValue() + ") ");
-			}
+			//testowa linijka, do usunięcia
+			if( level != 1) System.out.println(">> Level: " + level + " why not 1 <<");
+
+			ValueNode valueNode = (ValueNode)page.getNode(level, height);
+			System.out.println(indentation + "Leaf [ Value: " + (Key)valueNode.getValue() + "]");
+
 			System.out.println();
 		}
 	}
