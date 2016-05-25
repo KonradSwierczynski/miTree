@@ -20,7 +20,7 @@ public class Page{
 		memory = new byte[1024 * size];
 	}
 
-	public Successor getNode(int level, int heightOfTree){
+	public Node getNode(int level, int heightOfTree){
 		int sizeOfNode = size/(1<<level);
 		int offset = sizeOfNode;
 		if(level == heightOfTree){
@@ -28,12 +28,18 @@ public class Page{
 			offset = 0;
 		}
 		try{
-			return (Successor)deserialize(offset, sizeOfNode);
-		}catch(Exception e){}
-		return null;
+			Node result = deserialize(offset, sizeOfNode);
+			if(result == null){
+				return new Node(3);
+			}
+			return result;
+		}catch(Exception e){
+			return new Node(3);
+		}
+		// return null;
 	}
 
-	public void setNode(int level, int heightOfTree, Successor node){
+	public void setNode(int level, int heightOfTree, Node node){
 		int sizeOfNode = size/(1<<level);
 		int offset = sizeOfNode;
 		if(level == heightOfTree){
@@ -45,28 +51,28 @@ public class Page{
 			return;
 		};
 		for(int i = offset; i < offset + subMemory.length; i++){
-			System.out.print(subMemory[i - offset] + " ");
+			// System.out.print(subMemory[i - offset] + " ");
 			memory[i] = subMemory[i - offset];
 		}
 		System.out.println();
 
 	}
 
-	private Successor deserialize(int offset, int sizeOfNode) throws IOException, ClassNotFoundException {
+	private Node deserialize(int offset, int sizeOfNode) throws IOException, ClassNotFoundException {
 		byte [] subMemory = Arrays.copyOfRange(memory, offset, sizeOfNode + offset);
-
+		
 		try (ByteArrayInputStream byteArrayIn = new ByteArrayInputStream(subMemory);
 		ObjectInputStream objectIn = new ObjectInputStream(byteArrayIn)) {
-			return (Successor) objectIn.readObject();
+			return (Node) objectIn.readObject();
 		} catch (final Exception e) {
 
-			System.out.println(e + "????");
-
+			System.out.println("Deserializacja: " + e);
+		
 			return null;
 		}
 	}
 
-	public static byte[] serialize(Successor node) {
+	public static byte[] serialize(Node node) {
 		if (node == null) {
 			return new byte[0];
 		}
@@ -74,7 +80,8 @@ public class Page{
 	 	ObjectOutputStream objectOut = new ObjectOutputStream(byteArrayOut)) {
 			objectOut.writeObject(node);
 			return byteArrayOut.toByteArray();
-		} catch (final IOException e) {
+		} catch (final IOException e) {	
+			System.out.println("Serializacja: " + e);	
 			return new byte[0];
 		}
 	}

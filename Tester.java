@@ -10,7 +10,7 @@ import java.util.Random;
 class Tester{
 	public static void main(String[] args) {
 
-		BPlusTree<Integer, Integer> tree = new BPlusTree(3); //<Klucz, Wartosc>(t,k,maxSize)
+		MiTree<Integer, Integer> tree = new MiTree(); //<Klucz, Wartosc>(t,k,maxSize)
 		Set<Integer> set = new HashSet<Integer>();
 		Random generator = new Random();
 		Integer operation;
@@ -28,23 +28,24 @@ class Tester{
 			switch(operation){
 				case 0:
 					set.add(number);
-					tree.insert(number, number);
+					tree.insert(number);
 				break;
 				case 1:
-					set.remove(number);
-					tree.removeByKey(number);
+					// set.remove(number);
+					// tree.removeByKey(number);
 				break;
 				case 2:
 					queries++;
 					if(
-							(set.contains(number) && tree.searchByKey(number) == null) ||
-							(!set.contains(number) && tree.searchByKey(number) != null)
+							(set.contains(number) && tree.search(number) == null) ||
+							(!set.contains(number) && tree.search(number) != null)
 						){
 							errors++;
 						}
 				break;
 			}
-			maxHeight = Math.max(maxHeight, tree.getHeight());
+			// maxHeight = Math.max(maxHeight, tree.getHeight());
+			tree.dump();
 		}
 
 		// printowanie drzewa (efektu końcowego powyższych operacji)

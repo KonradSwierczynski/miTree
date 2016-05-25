@@ -1,10 +1,12 @@
 import java.util.ArrayList;
 import java.util.Date;
+import java.io.*;
 
-public class Node <Key extends Comparable<? super Key>, Value> extends Successor {
+public class Node <Key extends Comparable<? super Key>, Value> implements Serializable {
 
 	private ArrayList<Key> keys;
-	private ArrayList<Successor> successors;
+	private ArrayList<Key> values;
+	private ArrayList<Page> successors;
 
 	private int minKeys;
 	private int maxKeys;
@@ -15,6 +17,7 @@ public class Node <Key extends Comparable<? super Key>, Value> extends Successor
 	 * @param t podstawa do określenia min i max ilości kluczy w każdym węźle
 	 */
 	public Node (int t){
+		values = new ArrayList();
 		successors = new ArrayList();
 		keys = new ArrayList();
 		maxKeys = (2 * t) - 1;
@@ -23,18 +26,14 @@ public class Node <Key extends Comparable<? super Key>, Value> extends Successor
 	}
 
 	public ArrayList<Key> getKeys() { return keys; }
-	public ArrayList<Successor> getSuccessors() { return successors; }
+	public ArrayList<Page> getSuccessors() { return successors; }
 	public int getLevel() { return level; }
 
 	public void setKeys(ArrayList<Key> keys) { this.keys = keys; }
-	public void setSuccessors(ArrayList<Successor> successors) { this.successors = successors; }
+	public void setSuccessors(ArrayList<Page> successors) { this.successors = successors; }
 
 	public Boolean isLeaf() {
-		if(successors.size() == 0 || (successors.get(0) instanceof ValueNode)){
-			return true;
-		} else {
-			return false;
-		}
+		return getLevel() == 1;
 	}
 	public Boolean isFull() {
 		if(maxKeys <= keys.size()){
@@ -63,17 +62,27 @@ public class Node <Key extends Comparable<? super Key>, Value> extends Successor
 		return (getSuccessors().size()+1)/2;
 	}
 
+	public void setValue(int i, Key value){
+		if(isLeaf()){
+			values.set(i, value);
+		}
+	}
+
+	public ArrayList<Key> getValues(){
+		return values;
+	}
+
 	/**
 	* Dzieli węzeł
 	* @return lista zawierająca lewy i prawy węzeł powstały w wyniku podziału
 	*/
-	public ArrayList<Successor> split() {
+	public ArrayList<Node> split() {
 		int firstInRight = getSplitPoint();
 
 		Node newChild = new Node(minKeys + 1);
 		newChild.setLevel(getLevel());
 
-		newChild.setSuccessors( new ArrayList<Successor>(
+		newChild.setSuccessors( new ArrayList<Page>(
 				getSuccessors().subList(firstInRight, getSuccessors().size())
 			));
 		newChild.setKeys( new ArrayList<Key>(
@@ -83,11 +92,19 @@ public class Node <Key extends Comparable<? super Key>, Value> extends Successor
 		getSuccessors().subList(firstInRight, getSuccessors().size()).clear();
 		getKeys().subList(firstInRight - (isLeaf() ? 0 : 1), getSuccessors().size()).clear();
 
-		ArrayList result = new ArrayList<Successor>();
+		ArrayList result = new ArrayList<Node>();
 
 		result.add(this);
 		result.add(newChild);
 
 		return result;
+	}
+
+	public Boolean contains(Page successor){
+		for(int i=0;i<successors.size(); i++){
+			if(successors.get(i) == successor)
+				return true;
+		}
+		return false;
 	}
 }
