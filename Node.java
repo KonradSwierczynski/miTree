@@ -6,7 +6,7 @@ public class Node <Key extends Comparable<? super Key>, Value> implements Serial
 
 	private ArrayList<Key> keys;
 	private ArrayList<Key> values;
-	private ArrayList<Page> successors;
+	private ArrayList<Integer> successors;
 
 	private int minKeys;
 	private int maxKeys;
@@ -26,11 +26,13 @@ public class Node <Key extends Comparable<? super Key>, Value> implements Serial
 	}
 
 	public ArrayList<Key> getKeys() { return keys; }
-	public ArrayList<Page> getSuccessors() { return successors; }
+	public ArrayList<Integer> getSuccessors() { return successors; }
+	public Page getSuccessor(int i){ return Page.getById(successors.get(i)); }
+	public void addSuccessor(Page p){ successors.add(p.getId()); }
 	public int getLevel() { return level; }
 
 	public void setKeys(ArrayList<Key> keys) { this.keys = keys; }
-	public void setSuccessors(ArrayList<Page> successors) { this.successors = successors; }
+	public void setSuccessors(ArrayList<Integer> successors) { this.successors = successors; }
 
 	public Boolean isLeaf() {
 		return getLevel() == 1;
@@ -82,7 +84,7 @@ public class Node <Key extends Comparable<? super Key>, Value> implements Serial
 		Node newChild = new Node(minKeys + 1);
 		newChild.setLevel(getLevel());
 
-		newChild.setSuccessors( new ArrayList<Page>(
+		newChild.setSuccessors( new ArrayList<Integer>(
 				getSuccessors().subList(firstInRight, getSuccessors().size())
 			));
 		newChild.setKeys( new ArrayList<Key>(
@@ -102,7 +104,7 @@ public class Node <Key extends Comparable<? super Key>, Value> implements Serial
 
 	public Boolean contains(Page successor){
 		for(int i=0;i<successors.size(); i++){
-			if(successors.get(i) == successor)
+			if(successors.get(i) == successor.getId())
 				return true;
 		}
 		return false;

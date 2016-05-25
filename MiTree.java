@@ -22,7 +22,7 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 		while( !node.isLeaf() ){
 			ki = findFirstEqualOrGreater(node, key);
 			level--;
-			node = ((Page)node.getSuccessors().get(ki)).getNode(level, height);
+			node = (node.getSuccessor(ki)).getNode(level, height);
 		}
 		if(ki < node.getSuccessors().size() && ((Key)node.getKeys().get(ki)).compareTo(key) == 0){
 			return (Value)node.getValues().get(ki);
@@ -62,13 +62,13 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 					c.getSplitPoint()
 				)
 			);
-			cPrim.getSuccessors().add(newPage);
-			cPrim.getSuccessors().add(newPagePrim);
+			cPrim.addSuccessor(newPage);
+			cPrim.addSuccessor(newPagePrim);
 
 			newPage.setNode(height - 1, height, splited.get(0));
 			newPage.setNode(height - 1, height, splited.get(1));
 			newPage.setNode(height, height, cPrim);
-			
+
 		}
 		rootPage = newPage;
 	}
@@ -81,8 +81,8 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 		if(!C.isLeaf()){
 			int i = findFirstEqualOrGreater(C, key);
 
-			ResultInsertEntry result = insertEntry(key, P, N, (Page) C.getSuccessors().get(i), level - 1);
-			C.getSuccessors().set(i, N);
+			ResultInsertEntry result = insertEntry(key, P, N, (Page) C.getSuccessor(i), level - 1);
+			C.getSuccessors().set(i, N.getId());
 			if(result.getR() == "SPLIT"){
 				key = (Key)result.getKey();
 				P = result.getPage();
@@ -95,7 +95,7 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 		// if( C.hasSpaceFor(key, P)){ ?????????
 		if(!C.isFull()){
 			System.out.println("wchodze tutaj z buta" + (C instanceof Node));
-			C.getSuccessors().add(P);
+			C.addSuccessor(P);
 			C.getKeys().add(key);
 			N.setNode(level, height, C);
 			System.out.println(N.getNode(level, height).getSuccessors().size());
@@ -110,10 +110,10 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 			ArrayList<Node> splited = C.split();
 			if(key.compareTo(splitKey) < 0){
 				splited.get(0).getKeys().add(key);
-				splited.get(0).getSuccessors().add(P);
+				splited.get(0).getSuccessors().add(P.getId());
 			} else {
 				splited.get(1).getKeys().add(key);
-				splited.get(1).getSuccessors().add(P);
+				splited.get(1).getSuccessors().add(P.getId());
 			}
 			if(!splited.get(0).isLeaf() && splited.get(1).contains(N)){
 				Node tmp = splited.get(0);
@@ -132,7 +132,7 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 		String r = "";
 		if (r.compareTo("ONE") == 0) {
 			Node c = ((Page)n).getNode(height, height);
-			Node cPrim = ((Page)c.getSuccessors().get(0)).getNode(height, height);
+			Node cPrim = (c.getSuccessor(0)).getNode(height, height);
 			height--;
 			n.setNode(height, height, cPrim);
 		}
@@ -157,15 +157,15 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 	private void mergeChild(Node parent, int leftSonIndex) {
 		Node leftSon =
 			((Page)
-				parent.getSuccessors().get(leftSonIndex)
+				parent.getSuccessor(leftSonIndex)
 			).getNode(parent.getLevel() -1 , height);
 		Node rightSon =
 			((Page)
-				parent.getSuccessors().get(leftSonIndex+1)
+				parent.getSuccessor(leftSonIndex+1)
 			).getNode(parent.getLevel() -1 , height);
-		
+
 		leftSon.getSuccessors().addAll(rightSon.getSuccessors());
-		
+
 		if (!leftSon.isLeaf())
 			leftSon.getKeys().add(parent.getKeys().get(leftSonIndex));
 		leftSon.getKeys().addAll(rightSon.getKeys());
@@ -192,7 +192,7 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 
 		if(node.isLeaf())
 			return;
-		
+
 		for(int i = 0; i < node.getSuccessors().size(); i++){
 			dump((Page)node.getSuccessors().get(i), level - 1, "   " + indentation);
 		}

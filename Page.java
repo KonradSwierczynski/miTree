@@ -6,10 +6,14 @@ import java.util.*;
 public class Page implements Serializable{
 
 	private static int size = 0;
+	private int pageId;
 	private byte[] memory;
+	private static Vector<Page> index = new Vector();
 
 	public Page(int kilobytes){
 		size = kilobytes;
+		pageId = index.size();
+		index.add(this);
 		memory = new byte[1024 * size];
 	}
 
@@ -18,6 +22,12 @@ public class Page implements Serializable{
 			size = 1024;
 		}
 		memory = new byte[1024 * size];
+	}
+	public int getId(){
+		return pageId;
+	}
+	public static Page getById(int id){
+		return index.elementAt(id);
 	}
 
 	public Node getNode(int level, int heightOfTree){
@@ -66,7 +76,7 @@ public class Page implements Serializable{
 		// System.out.println("Deserializacja " + offset + " " + sizeOfNode + " " + subMemory.length);
 		// for(int i=offset; i<offset+sizeOfNode;i++)
 			// System.out.print(subMemory[i-offset]);
-		
+
 		try (ByteArrayInputStream byteArrayIn = new ByteArrayInputStream(subMemory);
 		ObjectInputStream objectIn = new ObjectInputStream(byteArrayIn)) {
 			return objectIn.readObject();
@@ -79,7 +89,7 @@ public class Page implements Serializable{
 			System.out.println();
 			return null;*/
 		}catch (IOException e){
-			
+
 			System.out.println("abce");
 			return new Node(3);
 		}
@@ -96,8 +106,8 @@ public class Page implements Serializable{
 	 			System.out.println("to jest qpa");
 			objectOut.writeObject(node);
 			return byteArrayOut.toByteArray();
-		} catch (final IOException e) {	
-			System.out.println("Serializacja: " + e);	
+		} catch (final IOException e) {
+			System.out.println("Serializacja: " + e);
 			for (StackTraceElement ste : e.getStackTrace()) {
 				System.out.println(ste);
 			}
