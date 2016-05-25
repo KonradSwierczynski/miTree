@@ -46,7 +46,8 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 		Page newPage = new Page();
 		ResultInsertEntry tmpResult = insertEntry(key, page, newPage, rootPage, height);
 
-		rootPage = newPage;
+		// rootPage = newPage;
+		newPage = tmpResult.getPage();
 		if(tmpResult.getR() == "FULL"){
 			Page newPagePrim = new Page();
 			Node c = newPage.getNode(height, height);
@@ -69,11 +70,13 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 			newPage.setNode(height, height, cPrim);
 			
 		}
+		rootPage = newPage;
 	}
 
 	public ResultInsertEntry insertEntry(Key key, Page P, Page N, Page B, int level){
 		// System.out.println(((Node)P.getNode(1, height)).getTest());
 		Node C = B.getNode(level, height);
+		N= new Page();
 
 		if(!C.isLeaf()){
 			int i = findFirstEqualOrGreater(C, key);
@@ -95,14 +98,11 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 			C.getSuccessors().add(P);
 			C.getKeys().add(key);
 			N.setNode(level, height, C);
-			// System.out.println(level + "   :   " + height);
-			Node test = N.getNode(1, height);
-			System.out.println(test.getSuccessors().size());
-
+			System.out.println(N.getNode(level, height).getSuccessors().size());
 			if( C.isFull() ){
-				return new ResultInsertEntry("FULL", null, null);
+				return new ResultInsertEntry("FULL", key, N);
 			} else {
-				return new ResultInsertEntry("NULL", null, null);
+				return new ResultInsertEntry("NULL", key, N);
 			}
 		} else {
 			Page NPrim = new Page();

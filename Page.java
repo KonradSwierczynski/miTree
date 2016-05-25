@@ -3,7 +3,7 @@ import java.util.*;
 
 //TODO Exceptions
 
-public class Page{
+public class Page implements Serializable{
 
 	private static int size = 0;
 	private byte[] memory;
@@ -28,12 +28,13 @@ public class Page{
 			offset = 0;
 		}
 		try{
-			Node result = deserialize(offset, sizeOfNode);
+			Node result = (Node)deserializeNode(offset, sizeOfNode);
 			if(result == null){
 				return new Node(3);
 			}
 			return result;
 		}catch(Exception e){
+			System.out.println("abce");
 			return new Node(3);
 		}
 		// return null;
@@ -46,7 +47,9 @@ public class Page{
 			sizeOfNode = sizeOfNode * 2;
 			offset = 0;
 		}
-		byte[] subMemory = serialize(node);
+		byte[] subMemory = serializeNode(node);
+		if(subMemory == null)
+			System.out.println("WTF");
 		if(subMemory.length > sizeOfNode){
 			return;
 		};
@@ -58,7 +61,7 @@ public class Page{
 
 	}
 
-	private Node deserialize(int offset, int sizeOfNode) throws IOException, ClassNotFoundException {
+	private Object deserializeNode(int offset, int sizeOfNode) throws IOException, ClassNotFoundException {
 		byte [] subMemory = Arrays.copyOfRange(memory, offset, sizeOfNode + offset);
 		// System.out.println("Deserializacja " + offset + " " + sizeOfNode + " " + subMemory.length);
 		// for(int i=offset; i<offset+sizeOfNode;i++)
@@ -66,25 +69,31 @@ public class Page{
 		
 		try (ByteArrayInputStream byteArrayIn = new ByteArrayInputStream(subMemory);
 		ObjectInputStream objectIn = new ObjectInputStream(byteArrayIn)) {
-			return (Node) objectIn.readObject();
-		} catch (final Exception e) {
+			return objectIn.readObject();
+		/*} catch (final Exception e) {
 
 			System.out.println("Deserializacja: " + e);
 			for (StackTraceElement ste : e.getStackTrace()) {
 				System.out.println(ste);
 			}
 			System.out.println();
-			return null;
-		}//aa
+			return null;*/
+		}catch (IOException e){
+			
+			System.out.println("abce");
+			return new Node(3);
+		}
 	}
 
-	public static byte[] serialize(Node node) {
+	public byte[] serializeNode(Object node) {
 		if (node == null) {
 			System.out.println("dostarczono nulla");
 			return new byte[0];
 		}
 		try (ByteArrayOutputStream byteArrayOut = new ByteArrayOutputStream();
 	 	ObjectOutputStream objectOut = new ObjectOutputStream(byteArrayOut)) {
+	 		if(node == null)
+	 			System.out.println("to jest qpa");
 			objectOut.writeObject(node);
 			return byteArrayOut.toByteArray();
 		} catch (final IOException e) {	
