@@ -107,4 +107,9 @@ public class Node <Key extends Comparable<? super Key>, Value> implements Serial
 		}
 		return false;
 	}
+
+	// ---------------------------------------------
+	private String test;
+	public void setTest(String test){ this.test = test; }
+	public String getTest(){ return this.test; }
 }

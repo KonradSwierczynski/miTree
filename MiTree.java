@@ -8,7 +8,9 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 
 	public MiTree(){
 		height = 1;
-		rootPage = new Page(20000);
+
+		rootPage = new Page(1024);
+		// rootPage.setNode(1, 1, new Node(3));
 	}
 
 	public Value search(Key key){
@@ -32,6 +34,7 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 	public void insert(Key key){
 		Page newPage = new Page();
 		Node newNode = new Node(3);
+		newNode.setTest("ASBDAEDBUEDADSADDAS");
 		newNode.getKeys().add(key);
 		newNode.getValues().add(key);
 
@@ -42,6 +45,8 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 	private void insert(Key key, Page page){
 		Page newPage = new Page();
 		ResultInsertEntry tmpResult = insertEntry(key, page, newPage, rootPage, height);
+
+		rootPage = newPage;
 		if(tmpResult.getR() == "FULL"){
 			Page newPagePrim = new Page();
 			Node c = newPage.getNode(height, height);
@@ -67,8 +72,8 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 	}
 
 	public ResultInsertEntry insertEntry(Key key, Page P, Page N, Page B, int level){
+		// System.out.println(((Node)P.getNode(1, height)).getTest());
 		Node C = B.getNode(level, height);
-			// System.out.println("jeden");
 
 		if(!C.isLeaf()){
 			int i = findFirstEqualOrGreater(C, key);
@@ -86,12 +91,14 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 		}
 		// if( C.hasSpaceFor(key, P)){ ?????????
 		if(!C.isFull()){
-			System.out.println("wchodze tutaj z buta");
+			System.out.println("wchodze tutaj z buta" + (C instanceof Node));
 			C.getSuccessors().add(P);
 			C.getKeys().add(key);
 			N.setNode(level, height, C);
-			// B.setNode(level, height, C);
-			// B = N;
+			// System.out.println(level + "   :   " + height);
+			Node test = N.getNode(1, height);
+			System.out.println(test.getSuccessors().size());
+
 			if( C.isFull() ){
 				return new ResultInsertEntry("FULL", null, null);
 			} else {
@@ -174,7 +181,7 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 	}
 	private void dump(Page page, int level, String indentation){
 		Node node = (Node)page.getNode(level, height);
-		System.out.print(indentation + "InnerNode [" + node.getKeys().size() + " , " + node.getSuccessors().size() + "]");
+		System.out.print(indentation + (node.isLeaf()?"Leaf[":"Node[") + node.getKeys().size() + " , " + node.getSuccessors().size() + "]");
 		System.out.println();
 		System.out.print(indentation);
 		for(int i = 0; i < node.getKeys().size(); i++){

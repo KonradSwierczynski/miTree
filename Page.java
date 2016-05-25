@@ -54,12 +54,15 @@ public class Page{
 			// System.out.print(subMemory[i - offset] + " ");
 			memory[i] = subMemory[i - offset];
 		}
-		System.out.println();
+		// System.out.println();
 
 	}
 
 	private Node deserialize(int offset, int sizeOfNode) throws IOException, ClassNotFoundException {
 		byte [] subMemory = Arrays.copyOfRange(memory, offset, sizeOfNode + offset);
+		// System.out.println("Deserializacja " + offset + " " + sizeOfNode + " " + subMemory.length);
+		// for(int i=offset; i<offset+sizeOfNode;i++)
+			// System.out.print(subMemory[i-offset]);
 		
 		try (ByteArrayInputStream byteArrayIn = new ByteArrayInputStream(subMemory);
 		ObjectInputStream objectIn = new ObjectInputStream(byteArrayIn)) {
@@ -67,13 +70,17 @@ public class Page{
 		} catch (final Exception e) {
 
 			System.out.println("Deserializacja: " + e);
-		
+			for (StackTraceElement ste : e.getStackTrace()) {
+				System.out.println(ste);
+			}
+			System.out.println();
 			return null;
-		}
+		}//aa
 	}
 
 	public static byte[] serialize(Node node) {
 		if (node == null) {
+			System.out.println("dostarczono nulla");
 			return new byte[0];
 		}
 		try (ByteArrayOutputStream byteArrayOut = new ByteArrayOutputStream();
@@ -82,7 +89,11 @@ public class Page{
 			return byteArrayOut.toByteArray();
 		} catch (final IOException e) {	
 			System.out.println("Serializacja: " + e);	
-			return new byte[0];
+			for (StackTraceElement ste : e.getStackTrace()) {
+				System.out.println(ste);
+			}
+			System.out.println();
+			return null;
 		}
 	}
 }

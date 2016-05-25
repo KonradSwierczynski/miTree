@@ -19,11 +19,11 @@ class Tester{
 		Integer queries = 0; // liczba zapytań o wartość dla losowego klucza
 		Integer maxHeight = 0; // maxymalny poziom drzewa podczas testu
 
-		for(long i = 0L; i < 1000000L; i++){
+		for(long i = 0L; i < 1L; i++){
 
 			operation = generator.nextInt(3); // losowanie operacji jaka sie ma wykonać
 			number = generator.nextInt(200); // losowanie klucza dla wylosowanej operacji powyżej
-
+			operation = 0;
 			// w zależności od wylosowanej operacji są podejmowane jakieś zabiegi na drzewie i secie
 			switch(operation){
 				case 0:
