@@ -81,7 +81,7 @@ public class Node <Key extends Comparable<? super Key>, Value> implements Serial
 	public ArrayList<Node> split() {
 		int firstInRight = getSplitPoint();
 
-		Node newChild = new Node(minKeys + 1);
+		Node newChild = new Node(minKeys);
 		newChild.setLevel(getLevel());
 
 		newChild.setSuccessors( new ArrayList<Integer>(
@@ -91,8 +91,12 @@ public class Node <Key extends Comparable<? super Key>, Value> implements Serial
 				getKeys().subList(firstInRight, getKeys().size())
 			));
 
-		getSuccessors().subList(firstInRight, getSuccessors().size()).clear();
-		getKeys().subList(firstInRight - (isLeaf() ? 0 : 1), getSuccessors().size()).clear();
+		setSuccessors( new ArrayList<Integer>(
+				getSuccessors().subList(0, firstInRight)
+			));
+		setKeys( new ArrayList<Key>(
+				getKeys().subList(0, firstInRight - (isLeaf() ? 0 : 1))
+			));
 
 		ArrayList result = new ArrayList<Node>();
 

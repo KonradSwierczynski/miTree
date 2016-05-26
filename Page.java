@@ -21,7 +21,12 @@ public class Page implements Serializable{
 		if(size == 0){
 			size = 1024;
 		}
+		pageId = index.size();
+		index.add(this);
 		memory = new byte[1024 * size];
+	}
+	public int getCountOfPage(){
+		return index.size();
 	}
 	public int getId(){
 		return pageId;
@@ -39,13 +44,10 @@ public class Page implements Serializable{
 		}
 		try{
 			Node result = (Node)deserializeNode(offset, sizeOfNode);
-			if(result == null){
-				return new Node(3);
-			}
 			return result;
 		}catch(Exception e){
 			System.out.println("abce");
-			return new Node(3);
+			return new Node(4);
 		}
 		// return null;
 	}
@@ -64,46 +66,28 @@ public class Page implements Serializable{
 			return;
 		};
 		for(int i = offset; i < offset + subMemory.length; i++){
-			// System.out.print(subMemory[i - offset] + " ");
 			memory[i] = subMemory[i - offset];
 		}
-		// System.out.println();
 
 	}
 
 	private Object deserializeNode(int offset, int sizeOfNode) throws IOException, ClassNotFoundException {
 		byte [] subMemory = Arrays.copyOfRange(memory, offset, sizeOfNode + offset);
-		// System.out.println("Deserializacja " + offset + " " + sizeOfNode + " " + subMemory.length);
-		// for(int i=offset; i<offset+sizeOfNode;i++)
-			// System.out.print(subMemory[i-offset]);
 
 		try (ByteArrayInputStream byteArrayIn = new ByteArrayInputStream(subMemory);
 		ObjectInputStream objectIn = new ObjectInputStream(byteArrayIn)) {
 			return objectIn.readObject();
-		/*} catch (final Exception e) {
-
-			System.out.println("Deserializacja: " + e);
-			for (StackTraceElement ste : e.getStackTrace()) {
-				System.out.println(ste);
-			}
-			System.out.println();
-			return null;*/
 		}catch (IOException e){
-
-			System.out.println("abce");
-			return new Node(3);
+			return new Node(4);
 		}
 	}
 
 	public byte[] serializeNode(Object node) {
 		if (node == null) {
-			System.out.println("dostarczono nulla");
 			return new byte[0];
 		}
 		try (ByteArrayOutputStream byteArrayOut = new ByteArrayOutputStream();
 	 	ObjectOutputStream objectOut = new ObjectOutputStream(byteArrayOut)) {
-	 		if(node == null)
-	 			System.out.println("to jest qpa");
 			objectOut.writeObject(node);
 			return byteArrayOut.toByteArray();
 		} catch (final IOException e) {

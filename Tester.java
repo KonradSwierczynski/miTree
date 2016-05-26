@@ -19,7 +19,7 @@ class Tester{
 		Integer queries = 0; // liczba zapytań o wartość dla losowego klucza
 		Integer maxHeight = 0; // maxymalny poziom drzewa podczas testu
 
-		for(long i = 0L; i < 1L; i++){
+		for(long i = 0L; i < 20L; i++){
 
 			operation = generator.nextInt(3); // losowanie operacji jaka sie ma wykonać
 			number = generator.nextInt(200); // losowanie klucza dla wylosowanej operacji powyżej
@@ -27,8 +27,11 @@ class Tester{
 			// w zależności od wylosowanej operacji są podejmowane jakieś zabiegi na drzewie i secie
 			switch(operation){
 				case 0:
+					System.out.println("Insert " + number);
+					System.out.println("Ilosc Page'y " + (new Page()).getCountOfPage());
 					set.add(number);
 					tree.insert(number);
+					System.out.println("Ilosc Page'y " + (new Page()).getCountOfPage());
 				break;
 				case 1:
 					// set.remove(number);

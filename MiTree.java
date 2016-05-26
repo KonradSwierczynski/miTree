@@ -33,7 +33,7 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 
 	public void insert(Key key){
 		Page newPage = new Page();
-		Node newNode = new Node(3);
+		Node newNode = new Node(4);
 		newNode.setTest("ASBDAEDBUEDADSADDAS");
 		newNode.getKeys().add(key);
 		newNode.getValues().add(key);
@@ -47,27 +47,31 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 		ResultInsertEntry tmpResult = insertEntry(key, page, newPage, rootPage, height);
 
 		// rootPage = newPage;
-		newPage = tmpResult.getPage();
+		// newPage = tmpResult.getPage();
+		// newPage
 		if(tmpResult.getR() == "FULL"){
-			Page newPagePrim = new Page();
-			Node c = newPage.getNode(height, height);
+			Node oldRoot = newPage.getNode(height, height);
 			height++;
-			c.getSplitPoint();
-			ArrayList<Node> splited = c.split();
-			// Node cPrim = newPage.getNode(height, height);
-			Node cPrim = new Node(3);
 
-			cPrim.getKeys().add(
-				c.getKeys().get(
-					c.getSplitPoint()
-				)
+			ArrayList<Node> newSons = oldRoot.split();
+			Node newRoot = new Node(4);
+
+			newRoot.setLevel(oldRoot.getLevel() + 1);
+			System.out.println("Przepełnienie roota ");
+
+			newRoot.getKeys().add(
+					oldRoot.getKeys().get(
+						oldRoot.getSplitPoint()
+					)
 			);
-			cPrim.addSuccessor(newPage);
-			cPrim.addSuccessor(newPagePrim);
-
-			newPage.setNode(height - 1, height, splited.get(0));
-			newPage.setNode(height - 1, height, splited.get(1));
-			newPage.setNode(height, height, cPrim);
+			Page a = new Page();
+			Page b = new Page();
+			b.setNode(height-1, height, newSons.get(1));
+			a.setNode(height-1, height, newSons.get(0));
+			newRoot.addSuccessor(a);
+			newRoot.addSuccessor(b);
+			a.setNode(height, height, newRoot);
+			newPage = a;
 
 		}
 		rootPage = newPage;
@@ -76,7 +80,7 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 	public ResultInsertEntry insertEntry(Key key, Page P, Page N, Page B, int level){
 		// System.out.println(((Node)P.getNode(1, height)).getTest());
 		Node C = B.getNode(level, height);
-		N= new Page();
+		// N= new Page();
 
 		if(!C.isLeaf()){
 			int i = findFirstEqualOrGreater(C, key);
@@ -89,16 +93,14 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 				N = result.getPage();
 			} else {
 				N.setNode(level, height, C);
-				return new ResultInsertEntry("NULL", null, null);
+				return new ResultInsertEntry("NULL", key, N);
 			}
 		}
 		// if( C.hasSpaceFor(key, P)){ ?????????
 		if(!C.isFull()){
-			System.out.println("wchodze tutaj z buta" + (C instanceof Node));
 			C.addSuccessor(P);
 			C.getKeys().add(key);
 			N.setNode(level, height, C);
-			System.out.println(N.getNode(level, height).getSuccessors().size());
 			if( C.isFull() ){
 				return new ResultInsertEntry("FULL", key, N);
 			} else {
@@ -121,14 +123,13 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 				splited.set(1,tmp);
 			}
 			N.setNode(level, height, splited.get(0));
-			NPrim.setNode(level, height, splited.get(0));
-			return new ResultInsertEntry("SPLIT", (Key)(splited.get(0).getKeys().get(0)), NPrim);
+			NPrim.setNode(level, height, splited.get(1));
+			return new ResultInsertEntry("SPLIT", key, NPrim);
 		}
 	}
 
 	public void deletion(Key key){
 		Page n = new Page();
-		// String r = deleteEntry(key, n, rootPage, height);
 		String r = "";
 		if (r.compareTo("ONE") == 0) {
 			Node c = ((Page)n).getNode(height, height);
@@ -178,6 +179,7 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 	*/
 	public void dump(){
 		dump(rootPage, height, "");
+		System.out.println("--------------------------------");
 	}
 	private void dump(Page page, int level, String indentation){
 		Node node = (Node)page.getNode(level, height);
@@ -194,7 +196,7 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 			return;
 
 		for(int i = 0; i < node.getSuccessors().size(); i++){
-			dump((Page)node.getSuccessors().get(i), level - 1, "   " + indentation);
+			dump((Page)node.getSuccessor(i), level - 1, "   " + indentation);
 		}
 
 	}
