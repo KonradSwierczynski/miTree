@@ -130,13 +130,86 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 
 	public void deletion(Key key){
 		Page n = new Page();
-		String r = "";
-		if (r.compareTo("ONE") == 0) {
-			Node c = ((Page)n).getNode(height, height);
-			Node cPrim = (c.getSuccessor(0)).getNode(height, height);
-			height--;
-			n.setNode(height, height, cPrim);
+		deleteEntry(key, rootPage.getNode(height, height), n);
+
+		rootPage = n;
+	}
+
+	public void deleteEntry(Key key, Node node, Page newPage){
+		//TODO nie umiemy usuwać ostatniego elementu
+
+		int i = findFirstEqualOrGreater(node, key);
+
+		if(node.isLeaf()){
+			if(i<node.getKeys().size() && ((Key)node.getKeys().get(i)).compareTo(key) == 0){
+				node.getKeys().remove(i);
+				node.getValues().remove(i);
+
+				newPage.setNode(node.getLevel(), height, node);
+			}
+		} else {
+			deleteEntry(key, node.getSuccessor(i).getNode(node.getLevel()-1, height), newPage);
+			node.getSuccessors().set(i, newPage.getId());
+			ResultInsertEntry afterMerge;
+
+			if(((Node)node.getSuccessor(i).getNode(node.getLevel()-1, height)).isThirsty()){
+				afterMerge = mergeAndSplit(node, i, newPage);
+
+				if (afterMerge.getR().equals("ONE")) {
+					node.getSuccessors().set(i, newPage.getId());
+
+					node.getSuccessors().remove(i == node.getSuccessors().size() - 1 ? i : i+1);
+
+					if (node.getLevel() == height && node.getSuccessors().size() == 1) {
+
+						height--;
+						newPage.setNode(height, height, newPage.getNode(height, height+1));
+
+						return;
+					}
+				} else {
+					node.getSuccessors().set(i, newPage);
+					node.getSuccessors().set(i + 1, afterMerge.getPage());
+				}
+			}
+
+			newPage.setNode(node.getLevel(), height, node);
 		}
+
+	}
+
+	private ResultInsertEntry mergeAndSplit(Node node, int nrChild, Page page){
+		if(node.getSuccessors().size() != 1) {
+			mergeChild(node, Math.max(0, nrChild-1));
+
+			Node merged = (Node)node.getSuccessors().get(nrChild);
+
+			if(merged.isFull()){
+				node.getKeys().add(nrChild+1, merged.getKeys().get(merged.getSplitPoint()));
+
+				ArrayList<Node> splitted = merged.split();
+
+				node.getSuccessors().set(nrChild, splitted.get(0));
+
+				if (nrChild+1 == node.getSuccessors().size()) {
+					node.getSuccessors().add(splitted.get(1));
+				} else {
+					node.getSuccessors().add(nrChild+1, splitted.get(1));
+				}
+				page.setNode(merged.getLevel()-1, height, splitted.get(0));
+
+				Page otherPage = new Page();
+
+				otherPage.setNode(merged.getLevel()-1, height, splitted.get(1));
+
+				return new ResultInsertEntry("TWO", null, otherPage);
+			} else {
+				page.setNode(merged.getLevel(), height, merged);
+
+				return new ResultInsertEntry("ONE", null, null);
+			}
+		}
+		return new ResultInsertEntry("ONE", null, null);
 	}
 
 	/**
