@@ -87,7 +87,7 @@ public ResultInsertEntry insertEntry(Key key, Value value, Page subRoot, Page ne
 			}
 
 			if(C.isFull(height)){
-				Key keyPrim = (Key)C.getKeys().get(C.getSplitPoint());
+				Key keyPrim = (Key)C.getKeys().get(C.getSplitPoint()-1);
 				Page newPagePrim = tmpResult.getPage();
 				ArrayList<Node> splited = C.split();
 
@@ -241,7 +241,7 @@ public ResultInsertEntry insertEntry(Key key, Value value, Page subRoot, Page ne
 
 	}
 	public static void dumpNode(Node node, String indentation){
-		System.out.println(indentation + (node.isLeaf()?"Leaf":"Node") + "[K" + node.getKeys().size() + ", V" + node.getValues().size() + ", S" + node.getSuccessors().size() + "] ");
+// 		System.out.println(indentation + (node.isLeaf()?"Leaf":"Node") + "[K" + node.getKeys().size() + ", V" + node.getValues().size() + ", S" + node.getSuccessors().size() + "] ");
 		System.out.print(indentation);
 		for(int i = 0; i < node.getKeys().size(); i++){
 			System.out.print(node.getKeys().get(i) + " ");
