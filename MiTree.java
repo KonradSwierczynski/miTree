@@ -3,6 +3,7 @@ import java.util.*;
 
 public class MiTree <Key extends Comparable<? super Key>, Value> {
 	private int height;
+	private final int keysInNode = 4;
 	Page rootPage;
 
 
@@ -10,7 +11,7 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 		height = 1;
 
 		rootPage = new Page(10024);
-		// rootPage.setNode(1, 1, new Node(3));
+		// rootPage.setNode(1, 1, new Node(keysInNode));
 	}
 
 	public Value search(Key key){
@@ -32,11 +33,13 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 	}
 
 	public void insert(Key key, Value value){
+		if( search(key) != null)	//warunek nie powtarzania się elementów
+			return;
 		Page newPage = new Page();
 		ResultInsertEntry tmpResult = insertEntry(key, value, rootPage, newPage, height);
 
 		if(tmpResult.getR() == "SPLIT"){
-			Node newRoot = new Node(4);
+			Node newRoot = new Node(keysInNode);
 			newRoot.getKeys().add(tmpResult.getKey());
 			newRoot.addSuccessor(newPage);
 			newRoot.addSuccessor(tmpResult.getPage());
@@ -109,7 +112,7 @@ public ResultInsertEntry insertEntry(Key key, Value value, Page subRoot, Page ne
 		rootPage = n;
 	}
 
-	public void deleteEntry(Key key, Node node, Page newPage){
+	private void deleteEntry(Key key, Node node, Page newPage){
 		//TODO nie umiemy usuwać ostatniego elementu
 
 		int i = findFirstEqualOrGreater(node, key);
@@ -156,7 +159,9 @@ public ResultInsertEntry insertEntry(Key key, Value value, Page subRoot, Page ne
 		if(node.getSuccessors().size() != 1) {
 			mergeChild(node, Math.max(0, nrChild-1));
 
-			Node merged = (Node)node.getSuccessors().get(nrChild);
+			Node merged = (Node)page
+				.getById((int)node.getSuccessors().get(nrChild))
+				.getNode(node.getLevel() - 1, height);	//TODO co jak node.getLevel == 1?
 
 			if(merged.isFull(height)){
 				node.getKeys().add(nrChild+1, merged.getKeys().get(merged.getSplitPoint()));
@@ -240,20 +245,21 @@ public ResultInsertEntry insertEntry(Key key, Value value, Page subRoot, Page ne
 		}
 
 	}
-	public static void dumpNode(Node node, String indentation){
-// 		System.out.println(indentation + (node.isLeaf()?"Leaf":"Node") + "[K" + node.getKeys().size() + ", V" + node.getValues().size() + ", S" + node.getSuccessors().size() + "] ");
+	private static void dumpNode(Node node, String indentation){
+ 		System.out.println(indentation + (node.isLeaf()?"Leaf":"Node") + "[K" + node.getKeys().size() + ", V" + node.getValues().size() + ", S" + node.getSuccessors().size() + "] ");
 		System.out.print(indentation);
 		for(int i = 0; i < node.getKeys().size(); i++){
 			System.out.print(node.getKeys().get(i) + " ");
 		}
 		System.out.println();
 
-// 		if (node.isLeaf()){
-// 			for(int i = 0; i < node.getValues().size(); i++){
-// 				System.out.print(node.getValues().get(i) + " ");
-// 			}
-// 		}
-// 		System.out.println();
+		// System.out.print(indentation);
+ 	// 	if (node.isLeaf()){
+ 	// 		for(int i = 0; i < node.getValues().size(); i++){
+ 	// 			System.out.print(node.getValues().get(i) + " ");
+ 	// 		}
+ 	// 	}
+ 	// 	System.out.println();
 	}
 /* ----------------------------------------------------------------------------- */
 }
