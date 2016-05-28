@@ -5,7 +5,7 @@ import java.io.*;
 public class Node <Key extends Comparable<? super Key>, Value> implements Serializable {
 
 	private ArrayList<Key> keys;
-	private ArrayList<Key> values;
+	private ArrayList<Value> values;
 	private ArrayList<Integer> successors;
 
 	private int minKeys;
@@ -17,9 +17,9 @@ public class Node <Key extends Comparable<? super Key>, Value> implements Serial
 	 * @param t podstawa do określenia min i max ilości kluczy w każdym węźle
 	 */
 	public Node (int t){
-		values = new ArrayList();
-		successors = new ArrayList();
-		keys = new ArrayList();
+		keys = new ArrayList<Key>();
+		values = new ArrayList<Value>();
+		successors = new ArrayList<Integer>();
 		maxKeys = (2 * t) - 1;
 		minKeys = t - 1;
 		level = 1;
@@ -33,16 +33,13 @@ public class Node <Key extends Comparable<? super Key>, Value> implements Serial
 
 	public void setKeys(ArrayList<Key> keys) { this.keys = keys; }
 	public void setSuccessors(ArrayList<Integer> successors) { this.successors = successors; }
+	private void setValues(ArrayList<Value> values) { this.values = values; }
 
 	public Boolean isLeaf() {
 		return getLevel() == 1;
 	}
-	public Boolean isFull() {
-		if(maxKeys <= keys.size()){
-			return true;
-		} else {
-			return false;
-		}
+	public Boolean isFull(int height) {
+		return (((height == level) ? maxKeys/2 : maxKeys) <= keys.size());
 	}
 	public Boolean isThirsty() {
 		if(keys.size() <= minKeys){
@@ -61,16 +58,10 @@ public class Node <Key extends Comparable<? super Key>, Value> implements Serial
 	*/
 	public int getSplitPoint()
 	{
-		return (getSuccessors().size()+1)/2;
+		return ((isLeaf() ? getValues() : getSuccessors()).size()+1)/2;
 	}
 
-	public void setValue(int i, Key value){
-		if(isLeaf()){
-			values.set(i, value);
-		}
-	}
-
-	public ArrayList<Key> getValues(){
+	public ArrayList<Value> getValues(){
 		return values;
 	}
 
@@ -84,19 +75,29 @@ public class Node <Key extends Comparable<? super Key>, Value> implements Serial
 		Node newChild = new Node(minKeys);
 		newChild.setLevel(getLevel());
 
-		newChild.setSuccessors( new ArrayList<Integer>(
+		if (isLeaf()){
+			newChild.setValues( new ArrayList<Value>(
+				getValues().subList(firstInRight, getValues().size())
+			));
+			setValues( new ArrayList<Value>(
+				getValues().subList(0, firstInRight)
+			));
+		} else {
+			newChild.setSuccessors( new ArrayList<Integer>(
 				getSuccessors().subList(firstInRight, getSuccessors().size())
 			));
-		newChild.setKeys( new ArrayList<Key>(
-				getKeys().subList(firstInRight, getKeys().size())
-			));
-
-		setSuccessors( new ArrayList<Integer>(
+			setSuccessors( new ArrayList<Integer>(
 				getSuccessors().subList(0, firstInRight)
 			));
+		}
+
+		newChild.setKeys( new ArrayList<Key>(
+			getKeys().subList(firstInRight, getKeys().size())
+		));
+
 		setKeys( new ArrayList<Key>(
-				getKeys().subList(0, firstInRight - (isLeaf() ? 0 : 1))
-			));
+			getKeys().subList(0, firstInRight - (isLeaf() ? 0 : 1))
+		));
 
 		ArrayList result = new ArrayList<Node>();
 
@@ -113,9 +114,4 @@ public class Node <Key extends Comparable<? super Key>, Value> implements Serial
 		}
 		return false;
 	}
-
-	// ---------------------------------------------
-	private String test;
-	public void setTest(String test){ this.test = test; }
-	public String getTest(){ return this.test; }
 }

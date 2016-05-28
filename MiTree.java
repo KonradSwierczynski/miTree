@@ -9,7 +9,7 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 	public MiTree(){
 		height = 1;
 
-		rootPage = new Page(1024);
+		rootPage = new Page(10024);
 		// rootPage.setNode(1, 1, new Node(3));
 	}
 
@@ -31,100 +31,74 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 		}
 	}
 
-	public void insert(Key key){
+	public void insert(Key key, Value value){
 		Page newPage = new Page();
-		Node newNode = new Node(4);
-		newNode.setTest("ASBDAEDBUEDADSADDAS");
-		newNode.getKeys().add(key);
-		newNode.getValues().add(key);
+		ResultInsertEntry tmpResult = insertEntry(key, value, rootPage, newPage, height);
 
-		newPage.setNode(1, height, newNode);
-		insert(key, newPage);
-	}
-
-	private void insert(Key key, Page page){
-		Page newPage = new Page();
-		ResultInsertEntry tmpResult = insertEntry(key, page, newPage, rootPage, height);
-
-		// rootPage = newPage;
-		// newPage = tmpResult.getPage();
-		// newPage
-		if(tmpResult.getR() == "FULL"){
-			Node oldRoot = newPage.getNode(height, height);
-			height++;
-
-			ArrayList<Node> newSons = oldRoot.split();
+		if(tmpResult.getR() == "SPLIT"){
 			Node newRoot = new Node(4);
-
-			newRoot.setLevel(oldRoot.getLevel() + 1);
-			System.out.println("Przepełnienie roota ");
-
-			newRoot.getKeys().add(
-					oldRoot.getKeys().get(
-						oldRoot.getSplitPoint()
-					)
-			);
-			Page a = new Page();
-			Page b = new Page();
-			b.setNode(height-1, height, newSons.get(1));
-			a.setNode(height-1, height, newSons.get(0));
-			newRoot.addSuccessor(a);
-			newRoot.addSuccessor(b);
-			a.setNode(height, height, newRoot);
-			newPage = a;
-
+			newRoot.getKeys().add(tmpResult.getKey());
+			newRoot.addSuccessor(newPage);
+			newRoot.addSuccessor(tmpResult.getPage());
+			newRoot.setLevel(height+1);
+			newPage.setNode(height, height+1, newPage.getNode(height, height));
+			tmpResult.getPage().setNode(height, height+1, tmpResult.getPage().getNode(height, height));
+			height++;
+			newPage.setNode(height, height, newRoot);
 		}
+
 		rootPage = newPage;
 	}
 
-	public ResultInsertEntry insertEntry(Key key, Page P, Page N, Page B, int level){
-		// System.out.println(((Node)P.getNode(1, height)).getTest());
-		Node C = B.getNode(level, height);
-		// N= new Page();
+public ResultInsertEntry insertEntry(Key key, Value value, Page subRoot, Page newPage, int level){
+		Node C = subRoot.getNode(level, height);
+		int i = findFirstEqualOrGreater(C, key);
 
-		if(!C.isLeaf()){
-			int i = findFirstEqualOrGreater(C, key);
-
-			ResultInsertEntry result = insertEntry(key, P, N, (Page) C.getSuccessor(i), level - 1);
-			C.getSuccessors().set(i, N.getId());
-			if(result.getR() == "SPLIT"){
-				key = (Key)result.getKey();
-				P = result.getPage();
-				N = result.getPage();
+		if(C.isLeaf()){
+			if(i < C.getKeys().size()) {
+				C.getKeys().add(i, key);
+				C.getValues().add(i, value);
 			} else {
-				N.setNode(level, height, C);
-				return new ResultInsertEntry("NULL", key, N);
+				C.getKeys().add(key);
+				C.getValues().add(value);
 			}
+			if(C.isFull(height)){
+				Key keyPrim = (Key)C.getKeys().get(C.getSplitPoint());
+				Page newPagePrim = new Page();
+				ArrayList<Node> splited = C.split();
+
+				newPage.setNode(1, height, splited.get(0));
+				newPagePrim.setNode(1, height, splited.get(1));
+
+				return new ResultInsertEntry("SPLIT", keyPrim, newPagePrim);
+			} else {
+				newPage.setNode(1, height, C);
+			}
+			return new ResultInsertEntry("NULL", null, null);
 		}
-		// if( C.hasSpaceFor(key, P)){ ?????????
-		if(!C.isFull()){
-			C.addSuccessor(P);
-			C.getKeys().add(key);
-			N.setNode(level, height, C);
-			if( C.isFull() ){
-				return new ResultInsertEntry("FULL", key, N);
+		else {
+			ResultInsertEntry tmpResult = insertEntry(key, value, C.getSuccessor(i), newPage, level - 1);
+			if(tmpResult.getR() == "SPLIT"){
+				C.getKeys().add(i, tmpResult.getKey());
+				C.getSuccessors().set(i, tmpResult.getPage().getId());
+				C.getSuccessors().add(i, newPage.getId());
 			} else {
-				return new ResultInsertEntry("NULL", key, N);
+				C.getSuccessors().set(i, newPage.getId());
 			}
-		} else {
-			Page NPrim = new Page();
-			Key splitKey = (Key)C.getKeys().get(C.getSplitPoint());
-			ArrayList<Node> splited = C.split();
-			if(key.compareTo(splitKey) < 0){
-				splited.get(0).getKeys().add(key);
-				splited.get(0).getSuccessors().add(P.getId());
+
+			if(C.isFull(height)){
+				Key keyPrim = (Key)C.getKeys().get(C.getSplitPoint());
+				Page newPagePrim = tmpResult.getPage();
+				ArrayList<Node> splited = C.split();
+
+				newPage.setNode(level, height, splited.get(0));
+				newPagePrim.setNode(level, height, splited.get(1));
+
+				return new ResultInsertEntry("SPLIT", keyPrim, newPagePrim);
 			} else {
-				splited.get(1).getKeys().add(key);
-				splited.get(1).getSuccessors().add(P.getId());
+				newPage.setNode(level, height, C);
+				return new ResultInsertEntry("NULL", null, null);
 			}
-			if(!splited.get(0).isLeaf() && splited.get(1).contains(N)){
-				Node tmp = splited.get(0);
-				splited.set(0,splited.get(1));
-				splited.set(1,tmp);
-			}
-			N.setNode(level, height, splited.get(0));
-			NPrim.setNode(level, height, splited.get(1));
-			return new ResultInsertEntry("SPLIT", key, NPrim);
 		}
 	}
 
@@ -184,7 +158,7 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 
 			Node merged = (Node)node.getSuccessors().get(nrChild);
 
-			if(merged.isFull()){
+			if(merged.isFull(height)){
 				node.getKeys().add(nrChild+1, merged.getKeys().get(merged.getSplitPoint()));
 
 				ArrayList<Node> splitted = merged.split();
@@ -256,14 +230,7 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 	}
 	private void dump(Page page, int level, String indentation){
 		Node node = (Node)page.getNode(level, height);
-		System.out.print(indentation + (node.isLeaf()?"Leaf[":"Node[") + node.getKeys().size() + " , " + node.getSuccessors().size() + "]");
-		System.out.println();
-		System.out.print(indentation);
-		for(int i = 0; i < node.getKeys().size(); i++){
-			System.out.print(node.getKeys().get(i) + " ");
-		}
-
-		System.out.println();
+		dumpNode(node, indentation);
 
 		if(node.isLeaf())
 			return;
@@ -272,6 +239,21 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 			dump((Page)node.getSuccessor(i), level - 1, "   " + indentation);
 		}
 
+	}
+	public static void dumpNode(Node node, String indentation){
+		System.out.println(indentation + (node.isLeaf()?"Leaf":"Node") + "[K" + node.getKeys().size() + ", V" + node.getValues().size() + ", S" + node.getSuccessors().size() + "] ");
+		System.out.print(indentation);
+		for(int i = 0; i < node.getKeys().size(); i++){
+			System.out.print(node.getKeys().get(i) + " ");
+		}
+		System.out.println();
+
+// 		if (node.isLeaf()){
+// 			for(int i = 0; i < node.getValues().size(); i++){
+// 				System.out.print(node.getValues().get(i) + " ");
+// 			}
+// 		}
+// 		System.out.println();
 	}
 /* ----------------------------------------------------------------------------- */
 }

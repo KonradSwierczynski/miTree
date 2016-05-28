@@ -28,10 +28,10 @@ class Tester{
 			switch(operation){
 				case 0:
 					System.out.println("Insert " + number);
-					System.out.println("Ilosc Page'y " + (new Page()).getCountOfPage());
+// 					System.out.println("Ilosc Page'y " + (new Page()).getCountOfPage());
 					set.add(number);
-					tree.insert(number);
-					System.out.println("Ilosc Page'y " + (new Page()).getCountOfPage());
+					tree.insert(number, number);
+// 					System.out.println("Ilosc Page'y " + (new Page()).getCountOfPage());
 				break;
 				case 1:
 					// set.remove(number);

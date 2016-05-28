@@ -9,6 +9,7 @@ public class Page implements Serializable{
 	private int pageId;
 	private byte[] memory;
 	private static Vector<Page> index = new Vector();
+	private boolean onNAND = false;
 
 	public Page(int kilobytes){
 		size = kilobytes;
@@ -53,6 +54,11 @@ public class Page implements Serializable{
 	}
 
 	public void setNode(int level, int heightOfTree, Node node){
+		if (onNAND){
+			System.err.println("Błąd krytyczny - Próba nadpisania strony");
+			System.exit(1);
+		}
+
 		int sizeOfNode = size/(1<<level);
 		int offset = sizeOfNode;
 		if(level == heightOfTree){
@@ -69,6 +75,10 @@ public class Page implements Serializable{
 			memory[i] = subMemory[i - offset];
 		}
 
+	}
+
+	public void writeToNAND() {
+		onNAND = true;
 	}
 
 	private Object deserializeNode(int offset, int sizeOfNode) throws IOException, ClassNotFoundException {

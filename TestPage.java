@@ -6,6 +6,6 @@ public class TestPage{
 		int l = 1;
 		// testowy.setNode(l,1, node);
 		Node node2 = (Node)testowy.getNode(l,1);
-		System.out.println(node2.getTest());
+// 		System.out.println(node2.getTest());
 	}
 }
