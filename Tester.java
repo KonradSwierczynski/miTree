@@ -19,11 +19,37 @@ class Tester{
 		Integer queries = 0; // liczba zapytań o wartość dla losowego klucza
 		Integer maxHeight = 0; // maxymalny poziom drzewa podczas testu
 		Integer leaks = 0; //liczba elementów, których nie udało się zapisać
+/*
+		tree.insert(5, 5);
+		tree.insert(3, 5);
+		tree.insert(34, 5);
+		tree.insert(12, 5);
+		tree.insert(11, 5);
+		tree.insert(31, 5);
+		tree.insert(35, 5);
+		tree.insert(19, 5);
+		tree.insert(17, 5);
+		tree.insert(8, 5);
+		tree.insert(7, 5);
+		tree.insert(0, 5);
+		// tree.dump();
+		// tree.delete(3);
+		// tree.dump();
+		
+		// tree.delete(12);
+		// tree.delete(3);
+		// tree.delete(3);
 
-		for(long i = 0L; i < 20L; i++){
+		// tree.delete(8);
+		Integer szukany = 12;
+		System.out.println((tree.search(szukany) == null?"nie znaleiono":"znaleziono") + " " + szukany);
+		tree.dump();
+/**/
+		
+		for(long i = 0L; i < 200L; i++){
 
 			operation = generator.nextInt(3); // losowanie operacji jaka sie ma wykonać
-			number = generator.nextInt(200); // losowanie klucza dla wylosowanej operacji powyżej
+			number = generator.nextInt(100); // losowanie klucza dla wylosowanej operacji powyżej
 			//operation = 0;
 			// w zależności od wylosowanej operacji są podejmowane jakieś zabiegi na drzewie i secie
 			switch(operation){
@@ -35,10 +61,13 @@ class Tester{
 // 					System.out.println("Ilosc Page'y " + (new Page()).getCountOfPage());
 				break;
 				case 1:
-					//set.remove(number);
+					System.out.println("Delete " + number);
+					tree.delete(number);
+					set.remove(number);
 					//tree.deletion(number);
 				break;
 				case 2:
+					System.out.println("Query " + number);
 					queries++;
 					if(
 							(set.contains(number) && tree.search(number) == null) ||
@@ -50,22 +79,28 @@ class Tester{
 			}
 			// maxHeight = Math.max(maxHeight, tree.getHeight());
 			tree.dump();
+			// operations++;
+			System.out.println("Queries: " + queries);
+			System.out.println("Count of errors: " + errors);
+			System.out.println("Count of pages: " + Page.getCountOfPage());
 		}
 
 		//Porównywanie zawartości set-a i drzewa
-		Iterator<Integer> iterator = set.iterator();
-    	while(iterator.hasNext()) {
-    		Integer element = iterator.next();
-            if(tree.search(element) == null) 
-            	leaks++;
-    	}
+		// Iterator<Integer> iterator = set.iterator();
+  //   	while(iterator.hasNext()) {
+  //   		Integer element = iterator.next();
+  //           if(tree.search(element) == null) 
+  //           	leaks++;
+  //   	}
 
 		// printowanie drzewa (efektu końcowego powyższych operacji)
 		tree.dump();
 		// wypisywanie info o teście
-		System.out.println("Max height of tree: " + maxHeight);
+		// System.out.println("Max height of tree: " + maxHeight);
 		System.out.println("Count of errors: " + errors);
 		System.out.println("Queries: " + queries);
-		System.out.println("Count of leaks: " + leaks); //póki co może wskazywać na błędy w tree.search
+		// System.out.println("Count of leaks: " + leaks); //póki co może wskazywać na błędy w tree.search
+	/**/	
 	}
+
 }

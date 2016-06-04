@@ -12,21 +12,21 @@ public class Page implements Serializable{
 	private boolean onNAND = false;
 
 	public Page(int kilobytes){
-		size = kilobytes;
+		size = kilobytes * 1024;
 		pageId = index.size();
 		index.add(this);
-		memory = new byte[1024 * size];
+		memory = new byte[size];
 	}
 
 	public Page(){
 		if(size == 0){
-			size = 1024;
+			size = 1024 * 1024;
 		}
 		pageId = index.size();
 		index.add(this);
-		memory = new byte[1024 * size];
+		memory = new byte[size];
 	}
-	public int getCountOfPage(){
+	public static int getCountOfPage(){
 		return index.size();
 	}
 	public int getId(){
@@ -88,7 +88,8 @@ public class Page implements Serializable{
 		ObjectInputStream objectIn = new ObjectInputStream(byteArrayIn)) {
 			return objectIn.readObject();
 		}catch (IOException e){
-			return new Node(4);
+			System.out.println("Stworzono nowy Node, rozmiar Node: " + sizeOfNode + " serializacja: " +subMemory.length);
+			return null;
 		}
 	}
 

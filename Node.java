@@ -10,6 +10,7 @@ public class Node <Key extends Comparable<? super Key>, Value> implements Serial
 
 	private int minKeys;
 	private int maxKeys;
+	private int t;
 
 	private int level;
 
@@ -23,6 +24,7 @@ public class Node <Key extends Comparable<? super Key>, Value> implements Serial
 		maxKeys = (2 * t) - 1;
 		minKeys = t - 1;
 		level = 1;
+		this.t = t;
 	}
 
 	public ArrayList<Key> getKeys() { return keys; }
@@ -39,14 +41,10 @@ public class Node <Key extends Comparable<? super Key>, Value> implements Serial
 		return getLevel() == 1;
 	}
 	public Boolean isFull(int height) {
-		return (((height == level) ? maxKeys/2 : maxKeys) <= keys.size());
+		return (((height == level) ? maxKeys/2 : maxKeys) < keys.size());
 	}
 	public Boolean isThirsty() {
-		if(keys.size() <= minKeys){
-			return true;
-		} else {
-			return false;
-		}
+		return keys.size() < minKeys;
 	}
 	public void setLevel(int level){
 		this.level = level;
@@ -72,7 +70,7 @@ public class Node <Key extends Comparable<? super Key>, Value> implements Serial
 	public ArrayList<Node> split() {
 		int firstInRight = getSplitPoint();
 
-		Node newChild = new Node(minKeys);
+		Node newChild = new Node(t);
 		newChild.setLevel(getLevel());
 
 		if (isLeaf()){
