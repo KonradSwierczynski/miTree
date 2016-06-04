@@ -88,7 +88,6 @@ public class Page implements Serializable{
 		ObjectInputStream objectIn = new ObjectInputStream(byteArrayIn)) {
 			return objectIn.readObject();
 		}catch (IOException e){
-			System.out.println("Stworzono nowy Node, rozmiar Node: " + sizeOfNode + " serializacja: " +subMemory.length);
 			return null;
 		}
 	}

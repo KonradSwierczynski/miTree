@@ -106,7 +106,7 @@ public class Node <Key extends Comparable<? super Key>, Value> implements Serial
 	}
 
 	public Boolean contains(Page successor){
-		for(int i=0;i<successors.size(); i++){
+		for(int i = 0; i < successors.size(); i++){
 			if(successors.get(i) == successor.getId())
 				return true;
 		}
