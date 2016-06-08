@@ -4,27 +4,33 @@ import java.util.*;
 //TODO Exceptions
 
 public class Page implements Serializable{
-
+	private static int maxTreeHeight;
 	private static int size = 0;
 	private int pageId;
 	private byte[] memory;
 	private static Vector<Page> index = new Vector();
 	private boolean onNAND = false;
 
-	public Page(int kilobytes){
+	private int nodeBaseSize = 256;
+
+
+	public Page(int kilobytes, int maxTreeHeight){
 		size = kilobytes * 1024;
 		pageId = index.size();
 		index.add(this);
-		memory = new byte[size];
+		this.maxTreeHeight = maxTreeHeight;
+		memory = new byte[size + maxTreeHeight * nodeBaseSize];
 	}
 
 	public Page(){
 		if(size == 0){
 			size = 1024 * 1024;
 		}
+		if (maxTreeHeight == 0)
+			maxTreeHeight = 4;
 		pageId = index.size();
 		index.add(this);
-		memory = new byte[size];
+		memory = new byte[size + maxTreeHeight * nodeBaseSize];
 	}
 	public static int getCountOfPage(){
 		return index.size();
@@ -43,12 +49,18 @@ public class Page implements Serializable{
 			sizeOfNode = sizeOfNode * 2;
 			offset = 0;
 		}
+		offset += (maxTreeHeight - level) * nodeBaseSize;
+		// System.err.println("DES " + offset + ", " + level + ", " + heightOfTree + ", " 
+		//  			+ (size/(1<<(level - 1)) + (maxTreeHeight - level + 1) * nodeBaseSize) + ", " + (sizeOfNode + nodeBaseSize));
+		//System.err.println("DES "+ offset + ", " + level + ", " + heightOfTree);
+		//System.err.println("DES " + (offset + sizeOfNode + nodeBaseSize) + ", " + (size/(1<<(level - 1)) + (maxTreeHeight - level + 1) * nodeBaseSize));
 		try{
-			Node result = (Node)deserializeNode(offset, sizeOfNode);
+			Node result = (Node)deserializeNode(offset, sizeOfNode + nodeBaseSize);
 			return result;
 		}catch(Exception e){
-			System.out.println("abce");
-			return new Node(4);
+			System.out.println(e);
+
+			return new Node(2 * (maxTreeHeight - level + 1));
 		}
 		// return null;
 	}
@@ -58,7 +70,6 @@ public class Page implements Serializable{
 			System.err.println("Błąd krytyczny - Próba nadpisania strony");
 			System.exit(1);
 		}
-
 		int sizeOfNode = size/(1<<level);
 		int offset = sizeOfNode;
 		if(level == heightOfTree){
@@ -68,13 +79,15 @@ public class Page implements Serializable{
 		byte[] subMemory = serializeNode(node);
 		if(subMemory == null)
 			System.out.println("WTF");
-		if(subMemory.length > sizeOfNode){
+		if(subMemory.length > sizeOfNode + nodeBaseSize){
 			return;
 		};
+		offset += (maxTreeHeight - level) * nodeBaseSize;
+
+		//System.err.println("SER " + offset + ", " + level + ", " + heightOfTree + ", " + subMemory.length);
 		for(int i = offset; i < offset + subMemory.length; i++){
 			memory[i] = subMemory[i - offset];
 		}
-
 	}
 
 	public void writeToNAND() {
@@ -88,6 +101,8 @@ public class Page implements Serializable{
 		ObjectInputStream objectIn = new ObjectInputStream(byteArrayIn)) {
 			return objectIn.readObject();
 		}catch (IOException e){
+			System.err.println("HEHEHEHEHEHE" + sizeOfNode + ", " + offset + ", " +( (size + maxTreeHeight * nodeBaseSize) - sizeOfNode - offset));
+			// System.err.println(e);
 			return null;
 		}
 	}
@@ -101,7 +116,7 @@ public class Page implements Serializable{
 			objectOut.writeObject(node);
 			return byteArrayOut.toByteArray();
 		} catch (final IOException e) {
-			System.out.println("Serializacja: " + e);
+			//System.out.println("Serializacja: " + e);
 			for (StackTraceElement ste : e.getStackTrace()) {
 				System.out.println(ste);
 			}

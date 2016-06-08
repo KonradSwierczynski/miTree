@@ -2,10 +2,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.io.*;
 
-public class Node <Key extends Comparable<? super Key>, Value> implements Serializable {
+public class Node implements Serializable {
 
-	private ArrayList<Key> keys;
-	private ArrayList<Value> values;
+	private ArrayList<Integer> keys;
+	//private ArrayList<Integer> values;
 	private ArrayList<Integer> successors;
 
 	private int minKeys;
@@ -18,30 +18,34 @@ public class Node <Key extends Comparable<? super Key>, Value> implements Serial
 	 * @param t podstawa do określenia min i max ilości kluczy w każdym węźle
 	 */
 	public Node (int t){
-		keys = new ArrayList<Key>();
-		values = new ArrayList<Value>();
+		keys = new ArrayList<Integer>();
+		//values = new ArrayList<Integer>();
 		successors = new ArrayList<Integer>();
 		maxKeys = (2 * t) - 1;
 		minKeys = t - 1;
 		level = 1;
 		this.t = t;
 	}
-
-	public ArrayList<Key> getKeys() { return keys; }
+	public void setSize(int t) {
+		maxKeys = (2 * t) - 1;
+		minKeys = t - 1;
+		this.t = t;
+	}
+	public ArrayList<Integer> getKeys() { return keys; }
 	public ArrayList<Integer> getSuccessors() { return successors; }
 	public Page getSuccessor(int i){ return Page.getById(successors.get(i)); }
 	public void addSuccessor(Page p){ successors.add(p.getId()); }
 	public int getLevel() { return level; }
 
-	public void setKeys(ArrayList<Key> keys) { this.keys = keys; }
+	public void setKeys(ArrayList<Integer> keys) { this.keys = keys; }
 	public void setSuccessors(ArrayList<Integer> successors) { this.successors = successors; }
-	private void setValues(ArrayList<Value> values) { this.values = values; }
+	//private void setValues(ArrayList<Integer> values) { this.values = values; }
 
 	public Boolean isLeaf() {
 		return getLevel() == 1;
 	}
 	public Boolean isFull(int height) {
-		return (((height == level) ? maxKeys/2 : maxKeys) < keys.size());
+		return (maxKeys <= keys.size());
 	}
 	public Boolean isThirsty() {
 		return keys.size() < minKeys;
@@ -56,12 +60,12 @@ public class Node <Key extends Comparable<? super Key>, Value> implements Serial
 	*/
 	public int getSplitPoint()
 	{
-		return ((isLeaf() ? getValues() : getSuccessors()).size()+1)/2;
+		return ((isLeaf() ? getKeys() : getSuccessors()).size()+1)/2;
 	}
 
-	public ArrayList<Value> getValues(){
-		return values;
-	}
+	// public ArrayList<Integer> getValues(){
+	// 	return values;
+	// }
 
 	/**
 	* Dzieli węzeł
@@ -74,12 +78,12 @@ public class Node <Key extends Comparable<? super Key>, Value> implements Serial
 		newChild.setLevel(getLevel());
 
 		if (isLeaf()){
-			newChild.setValues( new ArrayList<Value>(
-				getValues().subList(firstInRight, getValues().size())
-			));
-			setValues( new ArrayList<Value>(
-				getValues().subList(0, firstInRight)
-			));
+			// newChild.setValues( new ArrayList<Integer>(
+			// 	getValues().subList(firstInRight, getValues().size())
+			// ));
+			// setValues( new ArrayList<Integer>(
+			// 	getValues().subList(0, firstInRight)
+			// ));
 		} else {
 			newChild.setSuccessors( new ArrayList<Integer>(
 				getSuccessors().subList(firstInRight, getSuccessors().size())
@@ -89,11 +93,11 @@ public class Node <Key extends Comparable<? super Key>, Value> implements Serial
 			));
 		}
 
-		newChild.setKeys( new ArrayList<Key>(
+		newChild.setKeys( new ArrayList<Integer>(
 			getKeys().subList(firstInRight, getKeys().size())
 		));
 
-		setKeys( new ArrayList<Key>(
+		setKeys( new ArrayList<Integer>(
 			getKeys().subList(0, firstInRight - (isLeaf() ? 0 : 1))
 		));
 

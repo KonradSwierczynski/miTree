@@ -1,17 +1,31 @@
 import java.io.*;
 import java.util.*;
 
-public class MiTree <Key extends Comparable<? super Key>, Value> {
+public class MiTree {
 	private int height = 1;
-	private final int keysInNode = 4;
 	Page rootPage;
 
+	/*
+	 * Te trzy wartosci powinny byc odpowiednio dobrane, poniewaz w przeciwnym wypadku drzewo
+	 * bedzie sie wysypywac.
+	 * Przetestowane trojki to [3, 4, 1], [4, 4, 2], [10, 3, 2]
+	 * Pierwsza wartosc to wartosc maksymalna, mozna zmniejszac.
+	 * Druga wartosc rowniez jest maksymalna, mozna zmniejszac
+	 * Trzecia wartosc jest minimalna, ale mozna zwiekszac
+	 * Jezeli maksymalna wysokosc drzewa zostanie przekroczona, to drzewo zostanie wydrukowane
+	 * w stanie sprzed proby dodania, wyswietlony zostanie komunikat i program zakonczy prace
+	 * (zgodnie z poleceniem)
+	 */
+	private final int keysInNode = 10;
+	private final int maxTreeHeight = 3; //maksymalna dopuszczalna wysokosc drzewa
+	private final int maxPageSize = 2; //w kilobajtach
+
 	public MiTree(){
-		rootPage = new Page(1024);
-		rootPage.setNode(1, 1, new Node(4));
+		rootPage = new Page(maxPageSize, maxTreeHeight);
+		rootPage.setNode(1, 1, new Node(keysInNode * 4));
 	}
 
-	public Value search(Key key){
+	public Integer search(Integer key){
 		Node node = (Node)rootPage.getNode(height, height);
 		int level = height;
 		int ki = findFirstEqualOrGreater(node, key);
@@ -20,25 +34,30 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 			node = (node.getSuccessor(ki)).getNode(level, height);
 			ki = findFirstEqualOrGreater(node, key);
 		}
-		if(ki < node.getKeys().size() && ((Key)node.getKeys().get(ki)).compareTo(key) == 0)
-			return (Value)node.getValues().get(ki);
+		if(ki < node.getKeys().size() && ((Integer)node.getKeys().get(ki)).compareTo(key) == 0)
+			return (Integer)node.getKeys().get(ki);
 		 else 
 			return null;
 	}
 
-	public void insert(Key key, Value value){
+	public void insert(Integer key) throws Exception{
 		if( search(key) != null)	//warunek nie powtarzania się elementów
 			return;
 		Page newPage = new Page();
 		Page newPagePrim = new Page();
 		Node root = rootPage.getNode(height,height);
-		insertEntry(key, value, root, newPage, newPagePrim);
+		insertEntry(key, root, newPage, newPagePrim);
 
 		if(root.isFull(height)){
-			Node newRoot = new Node(keysInNode);
+			if (height + 1 > maxTreeHeight)
+				throw new Exception("Drzewo przekroczylo dopuszczalny rozmiar");
+			int newSize = keysInNode * (int)Math.pow(2, maxTreeHeight - height - 1);
+			Node newRoot = new Node(newSize);
 			newRoot.setLevel(root.getLevel()+1);
 			newRoot.getKeys().add(root.getKeys().get(root.getSplitPoint()-1));
 			ArrayList<Node> splitted = root.split();
+			splitted.get(0).setSize(newSize);
+			splitted.get(1).setSize(newSize);
 			newRoot.getSuccessors().add(newPage.getId());
 			newRoot.getSuccessors().add(newPagePrim.getId());
 			height++;
@@ -48,23 +67,23 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 
 		} else 
 			newPage.setNode(height, height, root);
-		
+	//	System.err.println(height);
+		newPage.writeToNAND();
+		newPagePrim.writeToNAND();
 		rootPage = newPage;
 	}
 
-	public void insertEntry(Key key, Value value, Node subRoot, Page newPage, Page newPagePrim){
+	public void insertEntry(Integer key, Node subRoot, Page newPage, Page newPagePrim){
 		int i = findFirstEqualOrGreater(subRoot, key);
 		if(subRoot.isLeaf()){
 			if(i < subRoot.getKeys().size()) {
 				subRoot.getKeys().add(i, key);
-				subRoot.getValues().add(i, value);
 			} else {
 				subRoot.getKeys().add(key);
-				subRoot.getValues().add(value);
 			}
 		} else {
 			Node tmp = subRoot.getSuccessor(i).getNode(subRoot.getLevel()-1,height);
-			insertEntry(key, value, tmp, newPage, newPagePrim);
+			insertEntry(key, tmp, newPage, newPagePrim);
 			subRoot.getSuccessors().set(i, newPage.getId());
 			if(tmp.isFull(height))
 				splitChild(subRoot, i, newPage, newPagePrim);
@@ -72,7 +91,7 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 		newPage.setNode(subRoot.getLevel(), height, subRoot);
 	}
 
-	public void delete(Key key){
+	public void delete(Integer key){
 		if (search(key) == null)
 			return;
 		
@@ -85,17 +104,17 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 			height--;
 			newPage.setNode(height, height, tmp);
 		}
-
+		newPage.writeToNAND();
+		newPagePrim.writeToNAND();
 		rootPage = newPage;
 	}
 
-	private void deleteEntry(Key key, Node node, Page newPage, Page newPagePrim){
+	private void deleteEntry(Integer key, Node node, Page newPage, Page newPagePrim){
 		int i = findFirstEqualOrGreater(node, key);
 
 		if(node.isLeaf()){
-			if(i<node.getKeys().size() && ((Key)node.getKeys().get(i)).compareTo(key) == 0){
+			if(i<node.getKeys().size() && ((Integer)node.getKeys().get(i)).compareTo(key) == 0){
 				node.getKeys().remove(i);
-				node.getValues().remove(i);
 			}
 			newPage.setNode(node.getLevel(), height, node);
 		} else {
@@ -111,7 +130,6 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 			}
 			newPage.setNode(node.getLevel(), height, node);
 		}
-
 	}
 
 	private void mergeChild(Node parent, int leftSonIndex, Page newPage, Page newPagePrim) {
@@ -130,8 +148,6 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 
 		if (!leftSon.isLeaf())
 			leftSon.getKeys().add(parent.getKeys().get(leftSonIndex));
-		else
-			leftSon.getValues().addAll(rightSon.getValues());
 		leftSon.getKeys().addAll(rightSon.getKeys());
 		parent.getKeys().remove(leftSonIndex);
 		parent.getSuccessors().remove(leftSonIndex + 1);
@@ -159,10 +175,10 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 	* @param key wyszukiwany klucz
 	* @return index pierwszego większego lub index wychodzący poza tablice kluczy
 	*/
-	private int findFirstEqualOrGreater(Node node, Key key) {
+	private int findFirstEqualOrGreater(Node node, Integer key) {
 		int nrSuccessor;
 		for(nrSuccessor = 0; nrSuccessor < node.getKeys().size(); nrSuccessor++){
-			if(((Key)node.getKeys().get(nrSuccessor)).compareTo(key) >= 0){
+			if(((Integer)node.getKeys().get(nrSuccessor)).compareTo(key) >= 0){
 				break;
 			}
 		}
@@ -190,7 +206,7 @@ public class MiTree <Key extends Comparable<? super Key>, Value> {
 	}
 
 	private static void dumpNode(Node node, String indentation){
- 		System.out.println(indentation + (node.isLeaf()?"Leaf":"Node") + "[K" + node.getKeys().size() + ", V" + node.getValues().size() + ", S" + node.getSuccessors().size() + "] ");
+ 		System.out.println(indentation + (node.isLeaf()?"Leaf":"Node") + "[K" + node.getKeys().size() + ", S" + node.getSuccessors().size() + "] ");
 		System.out.print(indentation);
 		for(int i = 0; i < node.getKeys().size(); i++)
 			System.out.print(node.getKeys().get(i) + " ");
