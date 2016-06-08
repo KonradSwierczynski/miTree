@@ -8,21 +8,22 @@ public class MiTree {
 	/*
 	 * Te trzy wartosci powinny byc odpowiednio dobrane, poniewaz w przeciwnym wypadku drzewo
 	 * bedzie sie wysypywac.
-	 * Przetestowane trojki to [3, 4, 1], [4, 4, 2], [10, 3, 2]
+	 * Przetestowane trojki to [1, 4, 1], [2, 4, 2], [5, 3, 2]
 	 * Pierwsza wartosc to wartosc maksymalna, mozna zmniejszac.
 	 * Druga wartosc rowniez jest maksymalna, mozna zmniejszac
 	 * Trzecia wartosc jest minimalna, ale mozna zwiekszac
 	 * Jezeli maksymalna wysokosc drzewa zostanie przekroczona, to drzewo zostanie wydrukowane
 	 * w stanie sprzed proby dodania, wyswietlony zostanie komunikat i program zakonczy prace
-	 * (zgodnie z poleceniem)
+	 * (zgodnie z poleceniem).
+	 * Trzeba uwazac na rozmiar Page, poniewaz, jezeli 
 	 */
-	private final int keysInNode = 10;
-	private final int maxTreeHeight = 3; //maksymalna dopuszczalna wysokosc drzewa
+	private final int keysInNode = 2;
+	private final int maxTreeHeight = 4; //maksymalna dopuszczalna wysokosc drzewa
 	private final int maxPageSize = 2; //w kilobajtach
 
 	public MiTree(){
 		rootPage = new Page(maxPageSize, maxTreeHeight);
-		rootPage.setNode(1, 1, new Node(keysInNode * 4));
+		rootPage.setNode(1, 1, new Node(keysInNode * 8));
 	}
 
 	public Integer search(Integer key){
@@ -51,7 +52,7 @@ public class MiTree {
 		if(root.isFull(height)){
 			if (height + 1 > maxTreeHeight)
 				throw new Exception("Drzewo przekroczylo dopuszczalny rozmiar");
-			int newSize = keysInNode * (int)Math.pow(2, maxTreeHeight - height - 1);
+			int newSize = keysInNode * (int)Math.pow(2, maxTreeHeight - height);
 			Node newRoot = new Node(newSize);
 			newRoot.setLevel(root.getLevel()+1);
 			newRoot.getKeys().add(root.getKeys().get(root.getSplitPoint()-1));
