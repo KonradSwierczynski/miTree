@@ -71,6 +71,7 @@ class Tester{
 		tree.dump();
 		// wypisywanie info o teście
 		System.out.println("Count of pages: " + Page.index.size());
+		System.out.println("Deleted pages: " + (Page.numberPage - Page.index.size()));
 		System.out.println("Count of errors: " + errors);
 		System.out.println("Queries: " + queries);
 		System.out.println("Count of leaks: " + leaks); //póki co może wskazywać na błędy w tree.search
