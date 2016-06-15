@@ -8,7 +8,8 @@ public class Page implements Serializable{
 	private static int size = 0;
 	private int pageId;
 	private byte[] memory;
-	private static Vector<Page> index = new Vector();
+	public static HashMap<Integer, Page> index = new HashMap();
+	public static Integer numberPage = 0;
 	private boolean onNAND = false;
 
 	private int nodeBaseSize = 256;
@@ -16,8 +17,8 @@ public class Page implements Serializable{
 
 	public Page(int kilobytes, int maxTreeHeight){
 		size = kilobytes * 1024;
-		pageId = index.size();
-		index.add(this);
+		pageId = numberPage;
+		index.put(numberPage++, this);
 		this.maxTreeHeight = maxTreeHeight;
 		memory = new byte[size + maxTreeHeight * nodeBaseSize];
 	}
@@ -28,8 +29,8 @@ public class Page implements Serializable{
 		}
 		if (maxTreeHeight == 0)
 			maxTreeHeight = 4;
-		pageId = index.size();
-		index.add(this);
+		pageId = numberPage;
+		index.put(numberPage++, this);
 		memory = new byte[size + maxTreeHeight * nodeBaseSize];
 	}
 	public static int getCountOfPage(){
@@ -39,7 +40,7 @@ public class Page implements Serializable{
 		return pageId;
 	}
 	public static Page getById(int id){
-		return index.elementAt(id);
+		return index.get(id);
 	}
 
 	public Node getNode(int level, int heightOfTree){
@@ -101,7 +102,7 @@ public class Page implements Serializable{
 		ObjectInputStream objectIn = new ObjectInputStream(byteArrayIn)) {
 			return objectIn.readObject();
 		}catch (IOException e){
-			System.err.println("HEHEHEHEHEHE" + sizeOfNode + ", " + offset + ", " +( (size + maxTreeHeight * nodeBaseSize) - sizeOfNode - offset));
+			// System.err.println("HEHEHEHEHEHE" + sizeOfNode + ", " + offset + ", " +( (size + maxTreeHeight * nodeBaseSize) - sizeOfNode - offset));
 			// System.err.println(e);
 			return null;
 		}

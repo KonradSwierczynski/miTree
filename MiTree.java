@@ -8,7 +8,7 @@ public class MiTree {
 	/*
 	 * Te trzy wartosci powinny byc odpowiednio dobrane, poniewaz w przeciwnym wypadku drzewo
 	 * bedzie sie wysypywac.
-	 * Przetestowane trojki to [1, 4, 1], [2, 4, 2], [5, 3, 2]
+	 * Przetestowane trojki to [1, 4, 1], [2, 4, 2], [5, 3, 2], [1, 5, 2], [1, 6, 3]
 	 * Pierwsza wartosc to wartosc maksymalna, mozna zmniejszac.
 	 * Druga wartosc rowniez jest maksymalna, mozna zmniejszac
 	 * Trzecia wartosc jest minimalna, ale mozna zwiekszac
@@ -17,13 +17,13 @@ public class MiTree {
 	 * (zgodnie z poleceniem).
 	 * Trzeba uwazac na rozmiar Page, poniewaz, jezeli 
 	 */
-	private final int keysInNode = 2;
+	private final int keysInNode = 2; //liczba kluczy w Node
 	private final int maxTreeHeight = 4; //maksymalna dopuszczalna wysokosc drzewa
 	private final int maxPageSize = 2; //w kilobajtach
 
 	public MiTree(){
 		rootPage = new Page(maxPageSize, maxTreeHeight);
-		rootPage.setNode(1, 1, new Node(keysInNode * 8));
+		rootPage.setNode(1, 1, new Node(keysInNode * (int)Math.pow(2, maxTreeHeight - 1)));
 	}
 
 	public Integer search(Integer key){
@@ -184,6 +184,33 @@ public class MiTree {
 			}
 		}
 		return nrSuccessor;
+	}
+
+	Vector<Integer> usedPages;
+
+	public void deletePages(){
+		usedPages = new Vector();
+		selectPages(rootPage, height);
+
+		for(Integer i = 0;i<Page.numberPage; i++){
+			if(! usedPages.contains(i)){
+				Page.index.remove(i);
+			}
+		}
+	}
+
+	private void selectPages(Page tmpPage, Integer level){
+		if(tmpPage != null)
+		usedPages.add(tmpPage.getId());
+
+		if(level == 1)
+			return;
+
+		Node tmpNode = tmpPage.getNode(level, height);
+
+		for(int i=0;i<tmpNode.getSuccessors().size(); i++){
+			selectPages(tmpNode.getSuccessor(i), level - 1);
+		}
 	}
 
 	
