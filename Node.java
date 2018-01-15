@@ -47,6 +47,9 @@ public class Node implements Serializable {
 	public Boolean isFull(int height) {
 		return (maxKeys <= keys.size());
 	}
+	public Boolean isEmpty() {
+		return keys.isEmpty();
+	}
 	public Boolean isThirsty() {
 		return keys.size() < minKeys;
 	}
